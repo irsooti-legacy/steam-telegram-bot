@@ -14,6 +14,7 @@ namespace SteamInfoPlayerBot
 {
     class Program
     {
+        private static readonly int _telegramOwner = 29315313;
         private static readonly TelegramBotClient _botClient = new Telegram.Bot.TelegramBotClient(Environment.GetEnvironmentVariable("TELEGRAM_TOKEN"));
         private static readonly SteamService _steamClient = new SteamService(Environment.GetEnvironmentVariable("STEAM_TOKEN"));
         private static readonly GithubServices _githubClient = new GithubServices(Environment.GetEnvironmentVariable("GITHUB_TOKEN"));
@@ -65,19 +66,24 @@ namespace SteamInfoPlayerBot
                         $"◾️ Real Name: {playerInfo.RealName}\n" +
                         $"◾️ Status: {playerInfo.UserStatus}\n" +
                         $"{optCaption}";
+                    
                     await _botClient.SendPhotoAsync(e.Message.Chat.Id, new Telegram.Bot.Types.FileToSend(playerInfo.AvatarFullUrl), caption);
                 }
 
                 catch (System.Exception err)
                 {
-                    var x = await _githubClient.OpenIssue(err, e.Message.From);
-                    await _botClient.SendTextMessageAsync(e.Message.Chat.Id, "An error has occurred, a report has been sent to ours bug tracker: " + x.HtmlUrl);
+                    var x = await _githubClient.OpenTelegramIssue(err, e.Message.From);
+                    // For client
+                    await _botClient.SendTextMessageAsync(e.Message.Chat.Id, 
+                    "Please, insert the Steam ID or the Steam nickname. Without one of these information you can't retrieve any information.");
+                    // For Bot Admin
+                    await _botClient.SendTextMessageAsync(_telegramOwner, "An error has occurred, a report has been sent to ours bug tracker: " + x.HtmlUrl);
                 }
-
             }
         }
         private static void BotOnReceiveError(object sender, ReceiveErrorEventArgs receiveErrorEventArgs)
         {
+            _githubClient.OpenGeneralIssue(receiveErrorEventArgs.ApiRequestException);
             Debugger.Break();
         }
     }

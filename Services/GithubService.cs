@@ -15,7 +15,7 @@ namespace SteamInfoPlayerBot.Services
             _client.Credentials = new Credentials(token);
         }
 
-        public Task<Issue> OpenIssue(System.Exception err, dynamic from)
+        public Task<Issue> OpenTelegramIssue(System.Exception err, dynamic from)
         {
             NewIssue createIssue = new NewIssue(err.Message);
             createIssue.Body =
@@ -23,6 +23,20 @@ namespace SteamInfoPlayerBot.Services
             $"**Telegram id:** {from.Id} \n" +
             $"**Full name:** {from.FirstName} {from.LastName}\n" +
             $"**Username:** {from.Username} \n\n" +
+            $"```csharp\n" +
+            $"{err.StackTrace}\n" +
+            $"```";
+
+            createIssue.Labels.Add("error");
+            var issue = _client.Issue.Create("irsooti", "steam-bot", createIssue);
+            return issue;
+        }
+
+        public Task<Issue> OpenGeneralIssue(System.Exception err)
+        {
+            NewIssue createIssue = new NewIssue(err.Message);
+            createIssue.Body =
+            $"## Source: {err.Source} \n" +
             $"```csharp\n" +
             $"{err.StackTrace}\n" +
             $"```";
