@@ -38,5 +38,7 @@ namespace SteamInfoPlayerBot.Services
             ISteamWebResponse<ulong> playerId = await steamInterface.ResolveVanityUrlAsync(steamId);
             return playerId.Data;
         }
+
+        
     }
 }

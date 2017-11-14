@@ -16,6 +16,7 @@ namespace SteamInfoPlayerBot
     {
         private static readonly TelegramBotClient _botClient = new Telegram.Bot.TelegramBotClient(Environment.GetEnvironmentVariable("TELEGRAM_TOKEN"));
         private static readonly SteamService _steamClient = new SteamService(Environment.GetEnvironmentVariable("STEAM_TOKEN"));
+        private static readonly GithubServices _githubClient = new GithubServices(Environment.GetEnvironmentVariable("GITHUB_TOKEN"));
         public static void Main()
         {
             // Initialize the bot
@@ -43,7 +44,7 @@ namespace SteamInfoPlayerBot
                 string[] str = e.Message.Text.Split("/steam ");
                 if (str.Length < 2)
                 {
-                    await _botClient.SendTextMessageAsync(e.Message.Chat.Id, "Errore, l'argomento è vuoto");
+                    await _botClient.SendTextMessageAsync(e.Message.Chat.Id, "Insert the ID or a Steam nickname");
                     return;
                 }
                 string msg = e.Message.Text.Split("/steam ")[1];
@@ -69,7 +70,8 @@ namespace SteamInfoPlayerBot
 
                 catch (System.Exception err)
                 {
-                    await _botClient.SendTextMessageAsync(e.Message.Chat.Id, err.Message);
+                    var x = await _githubClient.OpenIssue(err, e.Message.From);
+                    await _botClient.SendTextMessageAsync(e.Message.Chat.Id, "An error has occurred, a report has been sent to ours bug tracker: " + x.HtmlUrl);
                 }
 
             }
